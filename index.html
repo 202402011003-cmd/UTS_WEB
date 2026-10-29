@@ -1,0 +1,1519 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InternHub ID - Sistem Informasi Lowongan & Persiapan Magang Mahasiswa</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f3ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            800: '#3730a3',
+                            900: '#1e1b4b',
+                        },
+                        navy: {
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Font Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="h-full text-slate-800 antialiased flex flex-col selection:bg-brand-500 selection:text-white">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 max-w-sm w-full pointer-events-none"></div>
+
+    <!-- Navigation Bar -->
+    <header class="sticky top-0 z-30 bg-navy-900/95 backdrop-blur-md border-b border-slate-800 text-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <!-- Brand Logo -->
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('explore')">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-white shadow-md shadow-brand-500/20">
+                        <i class="fa-solid me-0.5 fa-graduation-cap text-xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-xl font-bold tracking-tight text-white flex items-center gap-1.5">
+                            InternHub <span class="bg-brand-600 text-xs px-2 py-0.5 rounded-md font-semibold tracking-wide text-brand-100 uppercase">ID</span>
+                        </span>
+                        <p class="text-[10px] text-slate-400 -mt-1 tracking-wider hidden sm:block">PORTAL MAGANG MAHASISWA REGULER</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Links -->
+                <nav class="hidden md:flex items-center gap-1">
+                    <button id="nav-explore" onclick="switchTab('explore')" class="nav-btn text-brand-500 bg-slate-800/80 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                        <i class="fa-solid fa-briefcase"></i> Eksplorasi Lowongan
+                    </button>
+                    <button id="nav-dashboard" onclick="switchTab('dashboard')" class="nav-btn text-slate-300 hover:text-white hover:bg-slate-800 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2 relative">
+                        <i class="fa-solid fa-chart-line"></i> Dashboard Lamaran
+                        <span id="nav-app-count" class="bg-brand-600 text-white text-[10px] font-bold px-1.5 py-0.2 rounded-full hidden">0</span>
+                    </button>
+                    <button id="nav-guides" onclick="switchTab('guides')" class="nav-btn text-slate-300 hover:text-white hover:bg-slate-800 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> ATS Checker & Panduan
+                    </button>
+                </nav>
+
+                <!-- Saved Jobs Quick Access Button -->
+                <div class="hidden sm:flex items-center gap-3">
+                    <button onclick="switchTab('dashboard'); filterDashboardTab('bookmarks');" class="relative text-slate-300 hover:text-white bg-slate-800/60 hover:bg-slate-800 border border-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                        <i class="fa-solid fa-bookmark text-amber-400"></i>
+                        <span>Tersimpan</span>
+                        <span id="saved-count-badge" class="bg-slate-700 text-slate-200 text-xs px-2 py-0.5 rounded-full font-semibold">0</span>
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center">
+                    <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="text-slate-300 hover:text-white p-2 rounded-lg focus:outline-none">
+                        <i class="fa-solid fa-bars text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Navigation Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-navy-900 border-b border-slate-800 px-4 pt-2 pb-4 space-y-2">
+            <button onclick="switchTab('explore'); toggleMobileMenu();" class="w-full text-left text-white bg-slate-800 px-3 py-2.5 rounded-lg text-sm font-medium flex items-center gap-3">
+                <i class="fa-solid fa-briefcase text-brand-500 w-5"></i> Eksplorasi Lowongan
+            </button>
+            <button onclick="switchTab('dashboard'); toggleMobileMenu();" class="w-full text-left text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2.5 rounded-lg text-sm font-medium flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-chart-line text-indigo-400 w-5"></i> Dashboard Lamaran Saya
+                </div>
+                <span id="mobile-app-count" class="bg-brand-600 text-white text-xs px-2 py-0.5 rounded-full">0</span>
+            </button>
+            <button onclick="switchTab('guides'); toggleMobileMenu();" class="w-full text-left text-slate-300 hover:text-white hover:bg-slate-800 px-3 py-2.5 rounded-lg text-sm font-medium flex items-center gap-3">
+                <i class="fa-solid fa-wand-magic-sparkles text-emerald-400 w-5"></i> ATS Checker & Panduan
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container Content Area -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- ==================== TAB 1: EKSPLORASI LOWONGAN ==================== -->
+        <section id="tab-explore" class="space-y-6">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-navy-900 via-slate-900 to-indigo-950 p-6 sm:p-8 text-white shadow-xl border border-slate-800">
+                <div class="absolute -right-10 -bottom-10 w-64 h-64 bg-brand-600/20 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="relative z-10 max-w-3xl space-y-3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-500/10 border border-brand-500/30 text-brand-300 text-xs font-semibold">
+                        <i class="fa-solid fa-circle-check text-emerald-400"></i> Terverifikasi Kampus & Mitra Perusahaan
+                    </div>
+                    <h1 class="text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+                        Temukan Peluang Magang Berkualitas & Persiapkan Kariermu
+                    </h1>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                        Akses resmi ke ribuan posisi magang di BUMN, Unicorn, dan Korporasi Multinasional khusus mahasiswa reguler Indonesia.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Filter & Search Bar Section -->
+            <div class="bg-white p-4 sm:p-5 rounded-xl shadow-sm border border-slate-200/80 space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                    <!-- Search Input -->
+                    <div class="md:col-span-5 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="search-input" oninput="applyFilters()" placeholder="Cari posisi, kata kunci, atau nama perusahaan..." 
+                               class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                    </div>
+
+                    <!-- Filter Bidang/Jurusan -->
+                    <div class="md:col-span-3">
+                        <select id="filter-category" onchange="applyFilters()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                            <option value="ALL">Semua Bidang Pekerjaan</option>
+                            <option value="IT & Software">IT & Software Engineering</option>
+                            <option value="Marketing & Digital">Marketing & Digital Content</option>
+                            <option value="Design & Creative">Design & UI/UX</option>
+                            <option value="HR & Operations">HR & Business Operations</option>
+                            <option value="Finance & Accounting">Finance & Accounting</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter Work Type -->
+                    <div class="md:col-span-2">
+                        <select id="filter-type" onchange="applyFilters()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                            <option value="ALL">Semua Tipe Kerja</option>
+                            <option value="Hybrid">Hybrid</option>
+                            <option value="WFO">WFO (On-Site)</option>
+                            <option value="WFH">WFH (Remote)</option>
+                        </select>
+                    </div>
+
+                    <!-- Filter Stipend/Paid -->
+                    <div class="md:col-span-2">
+                        <select id="filter-stipend" onchange="applyFilters()" class="w-full px-3 py-2.5 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                            <option value="ALL">Semua Insentif</option>
+                            <option value="PAID">Berbayar (Paid)</option>
+                            <option value="CERTIFIED">Sertifikat Resmi</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Active Filters & Summary Bar -->
+                <div class="flex flex-wrap items-center justify-between pt-2 border-t border-slate-100 text-xs text-slate-500 gap-2">
+                    <div>
+                        Menampilkan <span id="job-count-text" class="font-bold text-slate-800">8</span> lowongan magang aktif
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="resetFilters()" class="text-slate-500 hover:text-brand-600 font-medium flex items-center gap-1">
+                            <i class="fa-solid fa-arrows-rotate text-[11px]"></i> Reset Filter
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Job Cards Grid -->
+            <div id="jobs-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                <!-- Dynamic job cards rendered by JS -->
+            </div>
+
+            <!-- Empty State -->
+            <div id="empty-jobs-state" class="hidden bg-white rounded-xl p-12 text-center border border-slate-200">
+                <div class="w-16 h-16 bg-slate-100 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i class="fa-solid fa-magnifying-glass text-2xl"></i>
+                </div>
+                <h3 class="text-base font-bold text-slate-800">Lowongan tidak ditemukan</h3>
+                <p class="text-sm text-slate-500 mt-1 max-w-md mx-auto">Coba ubah kata kunci pencarian atau sesuaikan opsi filter untuk melihat lebih banyak lowongan magang.</p>
+                <button onclick="resetFilters()" class="mt-4 px-4 py-2 bg-brand-600 text-white rounded-lg text-xs font-semibold hover:bg-brand-700 transition">
+                    Reset Semua Filter
+                </button>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: DASHBOARD LAMARAN SAYA ==================== -->
+        <section id="tab-dashboard" class="hidden space-y-6">
+            <!-- Header Section -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-2xl font-bold text-slate-900">Dashboard Magang Saya</h1>
+                    <p class="text-sm text-slate-500 mt-0.5">Pantau status pendaftaran berkas dan simpan lowongan impianmu di sini.</p>
+                </div>
+                <button onclick="switchTab('explore')" class="inline-flex items-center justify-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-semibold shadow-sm transition">
+                    <i class="fa-solid fa-plus text-xs"></i> Cari Lowongan Baru
+                </button>
+            </div>
+
+            <!-- Statistics Overview Cards -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">Total Terkirim</p>
+                        <h3 id="stat-total" class="text-2xl font-extrabold text-slate-800 mt-1">0</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">Seleksi Berkas</p>
+                        <h3 id="stat-review" class="text-2xl font-extrabold text-amber-600 mt-1">0</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">Tahap Wawancara</p>
+                        <h3 id="stat-interview" class="text-2xl font-extrabold text-indigo-600 mt-1">0</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                        <i class="fa-solid fa-comments"></i>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-500">Penawaran / Diterima</p>
+                        <h3 id="stat-accepted" class="text-2xl font-extrabold text-emerald-600 mt-1">0</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Inner Navigation Tabs -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="flex border-b border-slate-200 bg-slate-50/50 px-4">
+                    <button id="dash-tab-apps" onclick="filterDashboardTab('applications')" class="py-3 px-4 text-sm font-semibold text-brand-600 border-b-2 border-brand-600 flex items-center gap-2">
+                        <i class="fa-solid fa-list-check"></i> Riwayat Lamaran (<span id="dash-app-count">0</span>)
+                    </button>
+                    <button id="dash-tab-bookmarks" onclick="filterDashboardTab('bookmarks')" class="py-3 px-4 text-sm font-medium text-slate-500 hover:text-slate-700 border-b-2 border-transparent flex items-center gap-2">
+                        <i class="fa-solid fa-bookmark"></i> Lowongan Tersimpan (<span id="dash-saved-count">0</span>)
+                    </button>
+                </div>
+
+                <div class="p-5">
+                    <!-- Application List Container -->
+                    <div id="dash-applications-view" class="space-y-4">
+                        <!-- Dynamic content filled via JS -->
+                    </div>
+
+                    <!-- Saved/Bookmarked Jobs Container -->
+                    <div id="dash-bookmarks-view" class="hidden grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Dynamic content filled via JS -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: ATS CHECKER & PANDUAN MAGANG ==================== -->
+        <section id="tab-guides" class="hidden space-y-8">
+            <!-- Header Section -->
+            <div class="max-w-3xl">
+                <h1 class="text-2xl font-bold text-slate-900">Pusat Persiapan Karier & Simulasi ATS CV</h1>
+                <p class="text-sm text-slate-500 mt-1">Gunakan alat evaluasi otomatis dan panduan praktis untuk memastikan profil magangmu memenuhi standar seleksi perusahaan nasional.</p>
+            </div>
+
+            <!-- Interactive ATS Resume Score Simulator -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                <div class="flex flex-col md:flex-row md:items-center justify-between pb-4 border-b border-slate-100 gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-indigo-100 text-brand-600 flex items-center justify-center font-bold text-lg">
+                            <i class="fa-solid fa-robot"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-base font-bold text-slate-900">Simulasi ATS CV & Kesiapan Berkas</h2>
+                            <p class="text-xs text-slate-500">Uji seberapa optimal CV kamu terhadap filter sistem rekrutmen otomatis.</p>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        <i class="fa-solid fa-check-double me-1"></i> Standar HR Indonesia 2026
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <!-- Form Input Checklist for ATS Test -->
+                    <div class="lg:col-span-7 space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Target Position / Bidang Magang</label>
+                            <select id="ats-target-role" class="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500">
+                                <option value="uiux">UI/UX Design & Product</option>
+                                <option value="swe">Software Engineering & Development</option>
+                                <option value="marketing">Digital Marketing & Social Media</option>
+                                <option value="data">Data Analyst & Business Intelligence</option>
+                                <option value="hr">Human Resources & Operations</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 mb-1">Salin Teks Ringkasan CV / Pengalaman Kamu</label>
+                            <textarea id="ats-cv-text" rows="5" placeholder="Tempelkan ringkasan profil, deskripsi proyek, atau pengalaman organisasi dari CV kamu di sini..." 
+                                      class="w-full p-3 bg-slate-50 border border-slate-300 rounded-lg text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 custom-scrollbar"></textarea>
+                        </div>
+
+                        <!-- Checkbox Parameters -->
+                        <div class="space-y-2 pt-2">
+                            <p class="text-xs font-semibold text-slate-700">Elemen Struktur CV (Centang yang tersedia):</p>
+                            <div class="grid grid-cols-2 gap-2 text-xs text-slate-600">
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="ats-chk-contact" checked class="rounded text-brand-600 focus:ring-brand-500"> Email Student (.ac.id) / WA Active
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="ats-chk-metrics" checked class="rounded text-brand-600 focus:ring-brand-500"> Metrik Kuantitatif (%, Angka)
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="ats-chk-linkedin" checked class="rounded text-brand-600 focus:ring-brand-500"> Link LinkedIn / Portfolio Active
+                                </label>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" id="ats-chk-gpa" checked class="rounded text-brand-600 focus:ring-brand-500"> Pencantuman IPK & Semester
+                                </label>
+                            </div>
+                        </div>
+
+                        <button onclick="calculateAtsScore()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-calculator"></i> Analisis Skor Kesiapan CV
+                        </button>
+                    </div>
+
+                    <!-- Score Result Meter Card -->
+                    <div class="lg:col-span-5 bg-slate-50 p-5 rounded-xl border border-slate-200 flex flex-col justify-between space-y-4">
+                        <div>
+                            <h3 class="text-xs font-bold uppercase text-slate-500 tracking-wider">Hasil Analisis ATS Score</h3>
+                            
+                            <div class="flex items-center justify-center my-4">
+                                <div class="relative w-32 h-32 rounded-full border-8 border-slate-200 flex items-center justify-center bg-white shadow-inner">
+                                    <div class="text-center">
+                                        <span id="ats-score-num" class="text-3xl font-extrabold text-slate-800">82</span>
+                                        <span class="text-xs font-semibold text-slate-400 block">/ 100</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="text-center">
+                                <span id="ats-score-badge" class="inline-block px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full">Sangat Layak (ATS Friendly)</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2 text-xs border-t border-slate-200 pt-3">
+                            <p class="font-bold text-slate-700">Rekomendasi Perbaikan:</p>
+                            <ul id="ats-recommendations" class="space-y-1 text-slate-600 list-disc list-inside">
+                                <li>Penggunaan kata kunci sesuai bidang kerja sangat baik.</li>
+                                <li>Pastikan format file yang diunggah berupa PDF standar.</li>
+                                <li>Sertakan bukti sertifikat magang / pelatihan industri.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Preparation Checklist & Guides Section -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Checklist Card -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="w-9 h-9 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-folder-open"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900">Checklist Berkas Lamaran</h3>
+                    <ul class="text-xs text-slate-600 space-y-2">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-emerald-500 mt-0.5"></i>
+                            <span>Surat Pengantar Magang dari Kampus/Fakultas</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-emerald-500 mt-0.5"></i>
+                            <span>Transkrip Nilai Akademik Terbaru (Min. Semester 5)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-emerald-500 mt-0.5"></i>
+                            <span>CV ATS Format PDF (Max size 2MB)</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-check text-emerald-500 mt-0.5"></i>
+                            <span>Portfolio Proyek (Behance / GitHub / Google Drive)</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Interview Guide Card -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="w-9 h-9 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-user-tie"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900">Tips Wawancara Magang</h3>
+                    <ul class="text-xs text-slate-600 space-y-2">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-dot text-amber-500 mt-0.5 text-[8px]"></i>
+                            <span>Gunakan Metode STAR (Situation, Task, Action, Result) saat menjelaskan proyek.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-dot text-amber-500 mt-0.5 text-[8px]"></i>
+                            <span>Pelajari profil produk dan nilai perusahaan (Corporate Values).</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-dot text-amber-500 mt-0.5 text-[8px]"></i>
+                            <span>Siapkan 2-3 pertanyaan kritis untuk ditanyakan di akhir wawancara.</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Workplace Ethics Card -->
+                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-3">
+                    <div class="w-9 h-9 rounded-lg bg-indigo-100 text-brand-600 flex items-center justify-center font-bold">
+                        <i class="fa-solid fa-handshake"></i>
+                    </div>
+                    <h3 class="text-sm font-bold text-slate-900">Etika & Profesionalisme</h3>
+                    <ul class="text-xs text-slate-600 space-y-2">
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-dot text-brand-500 mt-0.5 text-[8px]"></i>
+                            <span>Jaga kerahasiaan data internal perusahaan (NDA).</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-dot text-brand-500 mt-0.5 text-[8px]"></i>
+                            <span>Proaktif berkomunikasi dengan Pembimbing Magang / Mentor.</span>
+                        </li>
+                        <li class="flex items-start gap-2">
+                            <i class="fa-solid fa-circle-dot text-brand-500 mt-0.5 text-[8px]"></i>
+                            <span>Patuhi disiplin jam kerja WFO maupun kesepakatan Hybrid.</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-navy-900 text-slate-400 border-t border-slate-800 text-xs py-8 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded bg-brand-600 text-white flex items-center justify-center font-bold text-xs">IH</div>
+                <span class="text-slate-200 font-semibold text-sm">InternHub ID</span>
+            </div>
+            <p class="text-slate-500">Proyek Studi Kasus Persiapan Magang Mahasiswa Reguler &copy; 2026 InternHub ID.</p>
+        </div>
+    </footer>
+
+    <!-- ==================== MODAL 1: DETAIL LOWONGAN ==================== -->
+    <div id="job-detail-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-8 transform transition-all">
+            <div class="p-6 border-b border-slate-100 flex items-start justify-between bg-slate-50/80">
+                <div class="flex items-center gap-4">
+                    <div id="modal-company-logo" class="w-14 h-14 rounded-xl text-white font-black text-lg flex items-center justify-center shadow-md">
+                        BCA
+                    </div>
+                    <div>
+                        <h2 id="modal-job-title" class="text-lg font-bold text-slate-900">UI/UX & Product Design Intern</h2>
+                        <p id="modal-company-name" class="text-xs font-semibold text-brand-600">PT Bank Central Asia Tbk</p>
+                        <div class="flex flex-wrap items-center gap-2 mt-1.5 text-xs text-slate-500">
+                            <span id="modal-location"><i class="fa-solid fa-location-dot text-rose-500 me-1"></i> Jakarta Barat</span>
+                            <span>•</span>
+                            <span id="modal-type" class="font-medium text-slate-700">Hybrid</span>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="closeModal('job-detail-modal')" class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200/50 transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-5 text-xs text-slate-700 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                <!-- Info Badges -->
+                <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <span class="text-[10px] uppercase text-slate-400 font-semibold block">Insentif Magang</span>
+                        <span id="modal-stipend" class="font-bold text-slate-800">Paid (Uang Saku)</span>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                        <span class="text-[10px] uppercase text-slate-400 font-semibold block">Durasi Program</span>
+                        <span id="modal-duration" class="font-bold text-slate-800">6 Bulan</span>
+                    </div>
+                    <div class="bg-slate-50 p-3 rounded-lg border border-slate-200 col-span-2 sm:col-span-1">
+                        <span class="text-[10px] uppercase text-slate-400 font-semibold block">Tenggat Pendaftaran</span>
+                        <span id="modal-deadline" class="font-bold text-rose-600">15 November 2026</span>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <h3 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-1.5">Deskripsi Peran</h3>
+                    <p id="modal-desc" class="leading-relaxed text-slate-600">
+                        Bergabunglah dengan tim Digital Banking BCA untuk mendesain pengalaman perbankan digital generasi mendatang bagi puluhan juta nasabah di Indonesia...
+                    </p>
+                </div>
+
+                <!-- Requirements -->
+                <div>
+                    <h3 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-1.5">Persyaratan Kualifikasi</h3>
+                    <ul id="modal-requirements" class="list-disc list-inside space-y-1 text-slate-600 leading-relaxed">
+                        <!-- Dynamic LI -->
+                    </ul>
+                </div>
+
+                <!-- Benefits -->
+                <div>
+                    <h3 class="text-xs font-bold uppercase text-slate-400 tracking-wider mb-1.5">Benefit & Fasilitas Magang</h3>
+                    <ul id="modal-perks" class="list-disc list-inside space-y-1 text-slate-600 leading-relaxed">
+                        <!-- Dynamic LI -->
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Footer Action -->
+            <div class="p-4 border-t border-slate-100 bg-slate-50 flex items-center justify-between gap-3">
+                <button id="modal-bookmark-btn" onclick="" class="px-4 py-2.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 rounded-xl text-xs font-semibold transition flex items-center gap-2">
+                    <i class="fa-regular fa-bookmark text-slate-500"></i> Simpan Lowongan
+                </button>
+                <button id="modal-apply-btn" onclick="" class="flex-1 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fa-solid fa-paper-plane"></i> Kirim Lamaran Sekarang
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 2: FORMULIR PENDAFTARAN & VALIDASI ==================== -->
+    <div id="apply-form-modal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl border border-slate-200 overflow-hidden my-8 transform transition-all">
+            <!-- Header -->
+            <div class="p-5 border-b border-slate-100 bg-navy-900 text-white flex items-center justify-between">
+                <div>
+                    <span class="text-[10px] font-bold text-brand-400 tracking-wider uppercase">Formulir Pendaftaran Magang</span>
+                    <h2 id="apply-modal-job-title" class="text-base font-bold text-white">UI/UX Designer - BCA</h2>
+                </div>
+                <button onclick="closeModal('apply-form-modal')" class="text-slate-400 hover:text-white p-1 rounded-lg">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Form -->
+            <form id="application-form" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4 text-xs text-slate-700 max-h-[70vh] overflow-y-auto custom-scrollbar">
+                
+                <div class="bg-indigo-50/60 border border-indigo-100 p-3 rounded-lg text-indigo-900 flex items-start gap-2 text-xs">
+                    <i class="fa-solid fa-circle-info text-brand-600 mt-0.5"></i>
+                    <span>Pastikan seluruh data diri dan berkas bertanda (<span class="text-rose-500">*</span>) diisi sesuai data mahasiswa aktif.</span>
+                </div>
+
+                <!-- Input Group: Data Mahasiswa -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-800 mb-1">Nama Lengkap Mahasiswa <span class="text-rose-500">*</span></label>
+                        <input type="text" id="form-name" required placeholder="Contoh: Budi Pratama" 
+                               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <p id="err-name" class="text-[10px] text-rose-500 mt-0.5 hidden">Nama wajib diisi minimal 3 karakter.</p>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-800 mb-1">Nomor Induk Mahasiswa (NIM) <span class="text-rose-500">*</span></label>
+                        <input type="text" id="form-nim" required placeholder="Contoh: 21081010100" 
+                               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <p id="err-nim" class="text-[10px] text-rose-500 mt-0.5 hidden">NIM hanya boleh berisi angka.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-800 mb-1">Perguruan Tinggi / Universitas <span class="text-rose-500">*</span></label>
+                        <input type="text" id="form-univ" required placeholder="Contoh: Universitas Indonesia / ITB / Universitas Airlangga" 
+                               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-800 mb-1">Program Studi / Jurusan <span class="text-rose-500">*</span></label>
+                        <input type="text" id="form-major" required placeholder="Contoh: Teknik Informatika / Sistem Informasi" 
+                               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-800 mb-1">Email Mahasiswa (.ac.id disukai) <span class="text-rose-500">*</span></label>
+                        <input type="email" id="form-email" required placeholder="budi@student.ac.id" 
+                               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <p id="err-email" class="text-[10px] text-rose-500 mt-0.5 hidden">Format email tidak valid.</p>
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-800 mb-1">Nomor WhatsApp Aktif <span class="text-rose-500">*</span></label>
+                        <input type="tel" id="form-phone" required placeholder="081234567890" 
+                               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <p id="err-phone" class="text-[10px] text-rose-500 mt-0.5 hidden">Nomor WhatsApp minimal 10 digit.</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-800 mb-1">IPK Terakhir (Skala 4.00) <span class="text-rose-500">*</span></label>
+                        <input type="number" step="0.01" min="0" max="4" id="form-gpa" required placeholder="3.75" 
+                               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                    </div>
+
+                    <div>
+                        <label class="block font-semibold text-slate-800 mb-1">Link CV / Portfolio (PDF / Drive) <span class="text-rose-500">*</span></label>
+                        <input type="url" id="form-cv-link" required placeholder="https://drive.google.com/file/d/..." 
+                               class="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        <p id="err-cv-link" class="text-[10px] text-rose-500 mt-0.5 hidden">Sertakan URL link berkas yang valid (http/https).</p>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1">
+                        <label class="block font-semibold text-slate-800">Surat Motivasi / Ringkasan Diri <span class="text-rose-500">*</span></label>
+                        <span id="char-counter" class="text-[10px] text-slate-400">0 / 300 karakter (min. 50)</span>
+                    </div>
+                    <textarea id="form-motivation" rows="4" required oninput="updateCharCounter()" placeholder="Jelaskan secara singkat alasan Anda tertarik mengisi posisi magang ini serta keterampilan utama yang Anda miliki..." 
+                              class="w-full p-3 border border-slate-300 rounded-lg text-xs focus:ring-2 focus:ring-brand-500 focus:outline-none custom-scrollbar"></textarea>
+                    <p id="err-motivation" class="text-[10px] text-rose-500 mt-0.5 hidden">Surat motivasi minimal 50 karakter.</p>
+                </div>
+
+                <div class="pt-2 flex items-center gap-2">
+                    <input type="checkbox" id="form-agree" required class="rounded text-brand-600 focus:ring-brand-500">
+                    <label for="form-agree" class="text-[11px] text-slate-600">
+                        Saya menyatakan data yang diisikan adalah benar dan bersedia mengikuti seluruh proses seleksi magang.
+                    </label>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-2 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('apply-form-modal')" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50">
+                        Batal
+                    </button>
+                    <button type="submit" class="px-6 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                        Kirim Lamaran Magang
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+    <script>
+        // Data Lowongan Magang Indonesia Asli & Terpercaya
+        const INITIAL_JOBS = [
+            {
+                id: "bca-uiux-01",
+                company: "PT Bank Central Asia Tbk",
+                title: "UI/UX & Product Design Intern",
+                category: "Design & Creative",
+                location: "Jakarta Barat (Menara BCA)",
+                type: "Hybrid",
+                stipend: "Paid (Uang Saku Rp 4.500.000/bln)",
+                duration: "6 Bulan (Agustus - Januari)",
+                deadline: "2026-11-15",
+                daysLeft: 17,
+                logoBg: "bg-blue-600",
+                logoText: "BCA",
+                major: "Teknik Informatika, Sistem Informasi, DKV",
+                desc: "Bergabunglah dengan tim Digital Banking BCA untuk merancang antarmuka aplikasi myBCA & KlikBCA generasi terbaru. Kamu akan berkolaborasi langsung dengan Product Owner dan Software Engineer.",
+                requirements: [
+                    "Mahasiswa aktif S1/D4 Min. Semester 5 jurusan DKV, Sistem Informasi, atau Terkait",
+                    "Menguasai Figma, Auto Layout, Wireframing, & Prototyping interaktif",
+                    "Memiliki portofolio studi kasus UX atau UI design yang siap ditinjau",
+                    "IPK Minimal 3.25 dari skala 4.00"
+                ],
+                perks: [
+                    "Uang saku bulanan kompetitif + konsumsi",
+                    "Mentorship intensif dari Senior UI/UX Specialist BCA",
+                    "Sertifikat Magang Resmi Bakti BCA",
+                    "Peluang jalur cepat rekrutmen karyawan tetap (ADP Program)"
+                ]
+            },
+            {
+                id: "telkom-pm-02",
+                company: "PT Telkom Indonesia (Persero) Tbk",
+                title: "Digital Product Management Intern",
+                category: "IT & Software",
+                location: "Bandung / Jakarta",
+                type: "WFO",
+                stipend: "Paid (Uang Saku Sesuai MSIB)",
+                duration: "6 Bulan (Magang MSIB / Mandiri)",
+                deadline: "2026-11-20",
+                daysLeft: 22,
+                logoBg: "bg-red-600",
+                logoText: "TELKOM",
+                major: "Sistem Informasi, Manajemen, Teknik Industri",
+                desc: "Membantu Product Manager dalam memetakan PRD (Product Requirement Document), menganalisis feedback pengguna platform B2B Digital Telkom, dan mengawal siklus sprint.",
+                requirements: [
+                    "Mahasiswa aktif minimal semester 5 IPK min 3.00",
+                    "Memahami Product Lifecycle, Agile/Scrum framework",
+                    "Kemampuan analisis data dasar (Excel, SQL dasar menjadi nilai plus)",
+                    "Komunikatif dan mampu bekerja dalam tim lintas fungsi"
+                ],
+                perks: [
+                    "Sertifikat Industri Resmi Telkom Digital",
+                    "Uang saku bulanan & tunjangan komunikasi",
+                    "Akses ke ekosistem produk digital terbesar di Indonesia"
+                ]
+            },
+            {
+                id: "goto-backend-03",
+                company: "GoTo Financial (Gojek / Tokopedia)",
+                title: "Software Engineering Intern - Backend (Go/Python)",
+                category: "IT & Software",
+                location: "Jakarta Selatan (Pasar Minggu)",
+                type: "Hybrid",
+                stipend: "Paid (Rp 5.500.000/bln)",
+                duration: "6 Bulan",
+                deadline: "2026-11-10",
+                daysLeft: 12,
+                logoBg: "bg-emerald-600",
+                logoText: "GOTO",
+                major: "Teknik Informatika, Ilmu Komputer, Data Science",
+                desc: "Mengembangkan microservice berkinerja tinggi untuk sistem pemrosesan transaksi Gopay & Midtrans. Terlibat langsung dalam skenario high-concurrency.",
+                requirements: [
+                    "Mahasiswa IT/Computer Science semester 5-8",
+                    "Paham konsep Algoritma, Struktur Data, REST API, & Database (PostgreSQL/Redis)",
+                    "Familiar dengan bahasa Go (Golang), Python, atau Java",
+                    "Pernah membuat proyek backend terintegrasi"
+                ],
+                perks: [
+                    "Gaji magang sangat menarik",
+                    "Fasilitas laptop kerja selama magang",
+                    "Kultur kerja fleksibel & inklusif khas Tech Unicorn"
+                ]
+            },
+            {
+                id: "paragon-mkt-04",
+                company: "PT Paragon Technology & Innovation",
+                title: "Brand Management & Marketing Intern",
+                category: "Marketing & Digital",
+                location: "Tangerang / Jakarta",
+                type: "WFO",
+                stipend: "Paid (Rp 4.000.000/bln + Product Allowance)",
+                duration: "3 - 6 Bulan",
+                deadline: "2026-11-30",
+                daysLeft: 32,
+                logoBg: "bg-teal-700",
+                logoText: "PARAGON",
+                major: "Manajemen, Komunikasi, DKV, Hubungan Masyarakat",
+                desc: "Merancang dan mengeksekusi kampanye pemasaran digital untuk brand kosmetik terkemuka (Wardah, Make Over, Kahf), riset tren Gen-Z, serta manajemen KOL.",
+                requirements: [
+                    "Mahasiswa aktif S1 semua jurusan (diutamakan Marketing/Komunikasi)",
+                    "Kreatif, update dengan tren TikTok, Instagram, & e-Commerce",
+                    "Memiliki kemampuan analisis campaign analytics",
+                    "Aktif berorganisasi di kampus"
+                ],
+                perks: [
+                    "Suplai produk kecantikan/grooming Paragon setiap bulan",
+                    "Jaringan profesional luas di industri FMCG",
+                    "Sertifikat Magang Resmi Paragonian"
+                ]
+            },
+            {
+                id: "traveloka-data-05",
+                company: "Traveloka Indonesia",
+                title: "Data Analyst & Business Intelligence Intern",
+                category: "IT & Software",
+                location: "Jakarta (BSD Green Office Park)",
+                type: "Hybrid",
+                stipend: "Paid (Rp 4.800.000/bln)",
+                duration: "6 Bulan",
+                deadline: "2026-11-12",
+                daysLeft: 14,
+                logoBg: "bg-sky-500",
+                logoText: "TVLK",
+                major: "Statistika, Matematika, Teknik Industri, Sistem Informasi",
+                desc: "Mengolah data transaksi dan perilaku pengguna Traveloka untuk memberikan actionable insights kepada tim bisnis menggunakan SQL, Tableau, dan Python.",
+                requirements: [
+                    "Mahasiswa tingkat akhir jurusan Kuantitatif (Statistika/Math/IT/Industri)",
+                    "Lancar menulis query SQL (BigQuery/PostgreSQL)",
+                    "Pengalaman menggunakan BI tools seperti Tableau / Metabase / PowerBI",
+                    "Kemampuan berfikir kritis dan pemecahan masalah"
+                ],
+                perks: [
+                    "Voucher diskon perjalanan Traveloka khusus staf/intern",
+                    "Lingkungan kerja internasional berbuka bahasa Inggris",
+                    "Mentoring langsung dari Lead Data Scientist"
+                ]
+            },
+            {
+                id: "unilever-hr-06",
+                company: "PT Unilever Indonesia Tbk",
+                title: "Human Capital & Employer Branding Intern",
+                category: "HR & Operations",
+                location: "BSD City, Tangerang Selatan",
+                type: "Hybrid",
+                stipend: "Paid (Rp 4.200.000/bln)",
+                duration: "6 Bulan (ULIP Prep)",
+                deadline: "2026-11-25",
+                daysLeft: 27,
+                logoBg: "bg-indigo-800",
+                logoText: "ULVR",
+                major: "Psikologi, Manajemen SDM, Komunikasi, Administrasi",
+                desc: "Mendukung operasional rekrutmen magang nasional, mengelola program engagement mahasiswa di kampus-kampus mitra, serta analisis kebutuhan talenta.",
+                requirements: [
+                    "Mahasiswa aktif Psikologi/Manajemen/Komunikasi semester 5-7",
+                    "Memiliki interpersonal & public speaking skill yang baik",
+                    "Terbiasa mengelola acara atau event kampus",
+                    "Bahasa Inggris aktif lisan & tulisan"
+                ],
+                perks: [
+                    "Pengalaman magang di korporasi Fortune 500",
+                    "Akses fasilitas kantor Unilever HQ Grha Unilever (Gym, Kantin, Daycare)",
+                    "Jalur rekomendasi program Unilever Future Leaders (UFLP)"
+                ]
+            },
+            {
+                id: "shopee-ops-07",
+                company: "Shopee Indonesia",
+                title: "Operations & Logistics Analyst Intern",
+                category: "HR & Operations",
+                location: "Jakarta Selatan (Pacific Century Place)",
+                type: "WFO",
+                stipend: "Paid (Rp 4.500.000/bln)",
+                duration: "3 - 6 Bulan",
+                deadline: "2026-11-18",
+                daysLeft: 20,
+                logoBg: "bg-orange-600",
+                logoText: "SHOPEE",
+                major: "Teknik Industri, Logistik, Manajemen SCM",
+                desc: "Menganalisis efisiensi alur pengiriman Shopee Express, mengidentifikasi bottleneck jaringan logistik, serta menyusun dashboard performa harian seller.",
+                requirements: [
+                    "Mahasiswa aktif S1 Teknik Industri / Manajemen Logistik IPK ≥ 3.30",
+                    "Mahir tingkat lanjut Microsoft Excel (VLOOKUP, Pivot, Complex Formula)",
+                    "Bersedia bekerja WFO di kantor pusat Jakarta",
+                    "Pekerja keras dan terbiasa dengan target ketat"
+                ],
+                perks: [
+                    "Uang makan harian tambahan",
+                    "Eksposur langsung ke operasional e-commerce terbesar di SEA"
+                ]
+            },
+            {
+                id: "tokopedia-content-08",
+                company: "Tokopedia",
+                title: "Social Media & Content Creator Intern",
+                category: "Marketing & Digital",
+                location: "Remote / WFH (Seluruh Indonesia)",
+                type: "WFH",
+                stipend: "Paid (Rp 3.500.000/bln)",
+                duration: "3 Bulan",
+                deadline: "2026-11-08",
+                daysLeft: 10,
+                logoBg: "bg-emerald-500",
+                logoText: "TOKO",
+                major: "Semua Jurusan (Komunikasi & DKV diutamakan)",
+                desc: "Membuat ide ide kreatif, scripting, dan produksi video TikTok/Reels harian untuk akun resmi Tokopedia, serta berkolaborasi dengan para Influencer.",
+                requirements: [
+                    "Percaya diri di depan kamera dan kreatif membuat konten tren",
+                    "Menguasai aplikasi video editing HP (CapCut / Premiere Mobile)",
+                    "Memiliki akun media sosial aktif dengan portofolio konten",
+                    "Bisa bekerja fleksibel secara remote"
+                ],
+                perks: [
+                    "Kerja 100% dari rumah (WFH)",
+                    "Pinjaman gadget/peralatan pembuat konten jika diperlukan",
+                    "Sertifikat resmi Tokopedia Academy"
+                ]
+            }
+        ];
+
+        // Default Initial Application Data to make dashboard immediately rich & realistic
+        const DEFAULT_APPLICATIONS = [
+            {
+                id: "app-101",
+                jobId: "bca-uiux-01",
+                jobTitle: "UI/UX & Product Design Intern",
+                company: "PT Bank Central Asia Tbk",
+                appliedDate: "2026-10-20",
+                status: "SELEKSI_BERKAS", // TERKIRIM, SELEKSI_BERKAS, INTERVIEW, DITERIMA, DITOLAK
+                statusLabel: "Dalam Seleksi Berkas",
+                applicantName: "Mahasiswa Reguler",
+                univ: "Universitas Indonesia"
+            },
+            {
+                id: "app-102",
+                jobId: "goto-backend-03",
+                jobTitle: "Software Engineering Intern - Backend (Go/Python)",
+                company: "GoTo Financial",
+                appliedDate: "2026-10-15",
+                status: "INTERVIEW",
+                statusLabel: "Undangan Wawancara HR",
+                applicantName: "Mahasiswa Reguler",
+                univ: "Universitas Indonesia"
+            }
+        ];
+
+        // App State Management
+        let savedJobIds = JSON.parse(localStorage.getItem('internhub_saved')) || ["bca-uiux-01", "paragon-mkt-04"];
+        let applications = JSON.parse(localStorage.getItem('internhub_apps')) || DEFAULT_APPLICATIONS;
+        let selectedJobForApply = null;
+
+        // Initialize Page on Load
+        document.addEventListener("DOMContentLoaded", () => {
+            renderJobsGrid(INITIAL_JOBS);
+            updateSavedBadges();
+            renderDashboard();
+            calculateAtsScore();
+        });
+
+        // Tab Switch Logic
+        function switchTab(tabName) {
+            // Hide all tab sections
+            document.getElementById('tab-explore').classList.add('hidden');
+            document.getElementById('tab-dashboard').classList.add('hidden');
+            document.getElementById('tab-guides').classList.add('hidden');
+
+            // Reset navbar active styles
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('text-brand-500', 'bg-slate-800/80');
+                btn.classList.add('text-slate-300');
+            });
+
+            // Active clicked tab
+            if (tabName === 'explore') {
+                document.getElementById('tab-explore').classList.remove('hidden');
+                document.getElementById('nav-explore').classList.add('text-brand-500', 'bg-slate-800/80');
+            } else if (tabName === 'dashboard') {
+                document.getElementById('tab-dashboard').classList.remove('hidden');
+                document.getElementById('nav-dashboard').classList.add('text-brand-500', 'bg-slate-800/80');
+                renderDashboard();
+            } else if (tabName === 'guides') {
+                document.getElementById('tab-guides').classList.remove('hidden');
+                document.getElementById('nav-guides').classList.add('text-brand-500', 'bg-slate-800/80');
+            }
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        // Filter Jobs Logic
+        function applyFilters() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const category = document.getElementById('filter-category').value;
+            const type = document.getElementById('filter-type').value;
+            const stipend = document.getElementById('filter-stipend').value;
+
+            const filtered = INITIAL_JOBS.filter(job => {
+                const matchQuery = job.title.toLowerCase().includes(query) || 
+                                   job.company.toLowerCase().includes(query) || 
+                                   job.desc.toLowerCase().includes(query) ||
+                                   job.major.toLowerCase().includes(query);
+                
+                const matchCategory = (category === 'ALL') || (job.category === category);
+                const matchType = (type === 'ALL') || (job.type === type);
+                
+                let matchStipend = true;
+                if (stipend === 'PAID') matchStipend = job.stipend.includes('Paid');
+                if (stipend === 'CERTIFIED') matchStipend = true; // all certified
+
+                return matchQuery && matchCategory && matchType && matchStipend;
+            });
+
+            renderJobsGrid(filtered);
+        }
+
+        function resetFilters() {
+            document.getElementById('search-input').value = '';
+            document.getElementById('filter-category').value = 'ALL';
+            document.getElementById('filter-type').value = 'ALL';
+            document.getElementById('filter-stipend').value = 'ALL';
+            applyFilters();
+        }
+
+        // Render Job Cards Grid
+        function renderJobsGrid(jobs) {
+            const container = document.getElementById('jobs-grid');
+            const emptyState = document.getElementById('empty-jobs-state');
+            document.getElementById('job-count-text').innerText = jobs.length;
+
+            if (jobs.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.innerHTML = jobs.map(job => {
+                const isSaved = savedJobIds.includes(job.id);
+                const hasApplied = applications.some(a => a.jobId === job.id);
+
+                return `
+                <div class="bg-white rounded-xl border border-slate-200/90 p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between group relative">
+                    <div>
+                        <!-- Header Card -->
+                        <div class="flex items-start justify-between gap-3 mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-xl ${job.logoBg} text-white font-bold text-sm flex items-center justify-center shadow-sm flex-shrink-0">
+                                    ${job.logoText}
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 text-sm group-hover:text-brand-600 transition leading-snug line-clamp-1">${job.title}</h3>
+                                    <p class="text-xs font-semibold text-slate-600">${job.company}</p>
+                                </div>
+                            </div>
+                            <button onclick="toggleSaveJob('${job.id}')" class="text-slate-400 hover:text-amber-500 p-1.5 rounded-lg hover:bg-slate-100 transition" title="Simpan Lowongan">
+                                <i class="${isSaved ? 'fa-solid fa-bookmark text-amber-500' : 'fa-regular fa-bookmark'} text-base"></i>
+                            </button>
+                        </div>
+
+                        <!-- Tag Badges -->
+                        <div class="flex flex-wrap items-center gap-1.5 my-3 text-[11px]">
+                            <span class="px-2.5 py-0.5 rounded-md font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200/80">
+                                <i class="fa-solid fa-money-bill-wave text-[10px] me-1"></i>${job.stipend.split('(')[0]}
+                            </span>
+                            <span class="px-2 py-0.5 rounded-md font-medium bg-slate-100 text-slate-700 border border-slate-200">
+                                <i class="fa-solid fa-building text-[10px] me-1"></i>${job.type}
+                            </span>
+                            <span class="px-2 py-0.5 rounded-md font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                <i class="fa-solid fa-clock text-[10px] me-1"></i>${job.duration}
+                            </span>
+                        </div>
+
+                        <!-- Snippet Description -->
+                        <p class="text-slate-600 text-xs leading-relaxed line-clamp-2 my-2">
+                            ${job.desc}
+                        </p>
+
+                        <!-- Major Preference -->
+                        <p class="text-[11px] text-slate-500 mt-2">
+                            <span class="font-semibold text-slate-700">Jurusan:</span> ${job.major}
+                        </p>
+                    </div>
+
+                    <!-- Footer Action Card -->
+                    <div class="pt-4 mt-4 border-t border-slate-100 flex items-center justify-between text-xs gap-2">
+                        <div class="text-[11px] text-rose-600 font-semibold flex items-center gap-1">
+                            <i class="fa-regular fa-clock"></i> sisa ${job.daysLeft} hari
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="openJobDetail('${job.id}')" class="px-3 py-1.5 text-slate-700 bg-slate-100 hover:bg-slate-200 font-semibold rounded-lg transition">
+                                Detail
+                            </button>
+                            ${hasApplied ? `
+                                <span class="px-3 py-1.5 bg-emerald-100 text-emerald-800 font-bold rounded-lg flex items-center gap-1">
+                                    <i class="fa-solid fa-check text-[10px]"></i> Dilamar
+                                </span>
+                            ` : `
+                                <button onclick="openApplyForm('${job.id}')" class="px-3.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-lg transition shadow-sm">
+                                    Lamar
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+        }
+
+        // Bookmark / Save Logic
+        function toggleSaveJob(jobId) {
+            const index = savedJobIds.indexOf(jobId);
+            if (index > -1) {
+                savedJobIds.splice(index, 1);
+                showToast("Lowongan dihapus dari daftar tersimpan.", "info");
+            } else {
+                savedJobIds.push(jobId);
+                showToast("Lowongan berhasil disimpan!", "success");
+            }
+
+            localStorage.setItem('internhub_saved', JSON.stringify(savedJobIds));
+            updateSavedBadges();
+            applyFilters();
+            renderDashboard();
+        }
+
+        function updateSavedBadges() {
+            document.getElementById('saved-count-badge').innerText = savedJobIds.length;
+            document.getElementById('dash-saved-count').innerText = savedJobIds.length;
+        }
+
+        // Open Detail Modal
+        function openJobDetail(jobId) {
+            const job = INITIAL_JOBS.find(j => j.id === jobId);
+            if (!job) return;
+
+            document.getElementById('modal-company-logo').className = `w-14 h-14 rounded-xl ${job.logoBg} text-white font-black text-lg flex items-center justify-center shadow-md`;
+            document.getElementById('modal-company-logo').innerText = job.logoText;
+            document.getElementById('modal-job-title').innerText = job.title;
+            document.getElementById('modal-company-name').innerText = job.company;
+            document.getElementById('modal-location').innerHTML = `<i class="fa-solid fa-location-dot text-rose-500 me-1"></i> ${job.location}`;
+            document.getElementById('modal-type').innerText = job.type;
+            document.getElementById('modal-stipend').innerText = job.stipend;
+            document.getElementById('modal-duration').innerText = job.duration;
+            document.getElementById('modal-deadline').innerText = `${job.deadline} (Sisa ${job.daysLeft} hari)`;
+            document.getElementById('modal-desc').innerText = job.desc;
+
+            // Requirements List
+            const reqContainer = document.getElementById('modal-requirements');
+            reqContainer.innerHTML = job.requirements.map(r => `<li>${r}</li>`).join('');
+
+            // Perks List
+            const perksContainer = document.getElementById('modal-perks');
+            perksContainer.innerHTML = job.perks.map(p => `<li>${p}</li>`).join('');
+
+            // Bookmark Btn Modal
+            const isSaved = savedJobIds.includes(job.id);
+            const bookmarkBtn = document.getElementById('modal-bookmark-btn');
+            bookmarkBtn.onclick = () => { toggleSaveJob(job.id); openJobDetail(job.id); };
+            bookmarkBtn.innerHTML = isSaved 
+                ? `<i class="fa-solid fa-bookmark text-amber-500"></i> Tersimpan` 
+                : `<i class="fa-regular fa-bookmark"></i> Simpan Lowongan`;
+
+            // Apply Btn Modal
+            const hasApplied = applications.some(a => a.jobId === job.id);
+            const applyBtn = document.getElementById('modal-apply-btn');
+            if (hasApplied) {
+                applyBtn.disabled = true;
+                applyBtn.className = "flex-1 py-2.5 bg-slate-200 text-slate-500 rounded-xl text-xs font-bold cursor-not-allowed text-center";
+                applyBtn.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-600"></i> Sudah Dilamar`;
+            } else {
+                applyBtn.disabled = false;
+                applyBtn.className = "flex-1 py-2.5 bg-brand-600 hover:bg-brand-700 text-white rounded-xl text-xs font-bold transition flex items-center justify-center gap-2 shadow-sm";
+                applyBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> Kirim Lamaran Sekarang`;
+                applyBtn.onclick = () => { closeModal('job-detail-modal'); openApplyForm(job.id); };
+            }
+
+            document.getElementById('job-detail-modal').classList.remove('hidden');
+        }
+
+        // Form Pendaftaran & Validasi
+        function openApplyForm(jobId) {
+            const job = INITIAL_JOBS.find(j => j.id === jobId);
+            if (!job) return;
+
+            selectedJobForApply = job;
+            document.getElementById('apply-modal-job-title').innerText = `${job.title} — ${job.company}`;
+            document.getElementById('application-form').reset();
+            updateCharCounter();
+            
+            // Hide previous errors
+            document.querySelectorAll('[id^="err-"]').forEach(el => el.classList.add('hidden'));
+
+            document.getElementById('apply-form-modal').classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function updateCharCounter() {
+            const val = document.getElementById('form-motivation').value;
+            const counter = document.getElementById('char-counter');
+            counter.innerText = `${val.length} / 300 karakter (min. 50)`;
+            if (val.length < 50) {
+                counter.classList.add('text-rose-500');
+            } else {
+                counter.classList.remove('text-rose-500');
+            }
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const name = document.getElementById('form-name').value.trim();
+            const nim = document.getElementById('form-nim').value.trim();
+            const univ = document.getElementById('form-univ').value.trim();
+            const major = document.getElementById('form-major').value.trim();
+            const email = document.getElementById('form-email').value.trim();
+            const phone = document.getElementById('form-phone').value.trim();
+            const gpa = document.getElementById('form-gpa').value;
+            const cvLink = document.getElementById('form-cv-link').value.trim();
+            const motivation = document.getElementById('form-motivation').value.trim();
+
+            let isValid = true;
+
+            // Name validation
+            if (name.length < 3) {
+                document.getElementById('err-name').classList.remove('hidden');
+                isValid = false;
+            } else {
+                document.getElementById('err-name').classList.add('hidden');
+            }
+
+            // NIM validation (numeric)
+            if (!/^\d+$/.test(nim)) {
+                document.getElementById('err-nim').classList.remove('hidden');
+                isValid = false;
+            } else {
+                document.getElementById('err-nim').classList.add('hidden');
+            }
+
+            // Email validation
+            if (!/\S+@\S+\.\S+/.test(email)) {
+                document.getElementById('err-email').classList.remove('hidden');
+                isValid = false;
+            } else {
+                document.getElementById('err-email').classList.add('hidden');
+            }
+
+            // Phone validation
+            if (phone.length < 10) {
+                document.getElementById('err-phone').classList.remove('hidden');
+                isValid = false;
+            } else {
+                document.getElementById('err-phone').classList.add('hidden');
+            }
+
+            // Motivation validation
+            if (motivation.length < 50) {
+                document.getElementById('err-motivation').classList.remove('hidden');
+                isValid = false;
+            } else {
+                document.getElementById('err-motivation').classList.add('hidden');
+            }
+
+            // CV URL validation
+            if (!cvLink.startsWith('http://') && !cvLink.startsWith('https://')) {
+                document.getElementById('err-cv-link').classList.remove('hidden');
+                isValid = false;
+            } else {
+                document.getElementById('err-cv-link').classList.add('hidden');
+            }
+
+            if (!isValid) return;
+
+            // Store new application
+            const newApp = {
+                id: "app-" + Date.now(),
+                jobId: selectedJobForApply.id,
+                jobTitle: selectedJobForApply.title,
+                company: selectedJobForApply.company,
+                appliedDate: new Date().toISOString().split('T')[0],
+                status: "SELEKSI_BERKAS",
+                statusLabel: "Dalam Seleksi Berkas",
+                applicantName: name,
+                univ: univ
+            };
+
+            applications.unshift(newApp);
+            localStorage.setItem('internhub_apps', JSON.stringify(applications));
+
+            closeModal('apply-form-modal');
+            showToast("Lamaran magang berhasil dikirim!", "success");
+            
+            // Refresh views
+            applyFilters();
+            switchTab('dashboard');
+        }
+
+        // Render Dashboard Lamaran & Stats
+        function renderDashboard() {
+            const total = applications.length;
+            const review = applications.filter(a => a.status === 'SELEKSI_BERKAS' || a.status === 'TERKIRIM').length;
+            const interview = applications.filter(a => a.status === 'INTERVIEW').length;
+            const accepted = applications.filter(a => a.status === 'DITERIMA').length;
+
+            document.getElementById('stat-total').innerText = total;
+            document.getElementById('stat-review').innerText = review;
+            document.getElementById('stat-interview').innerText = interview;
+            document.getElementById('stat-accepted').innerText = accepted;
+
+            document.getElementById('nav-app-count').innerText = total;
+            document.getElementById('mobile-app-count').innerText = total;
+            document.getElementById('dash-app-count').innerText = total;
+
+            if (total > 0) {
+                document.getElementById('nav-app-count').classList.remove('hidden');
+            }
+
+            // Render Applications List
+            const appsContainer = document.getElementById('dash-applications-view');
+            if (applications.length === 0) {
+                appsContainer.innerHTML = `
+                    <div class="text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                        <i class="fa-solid fa-paper-plane text-3xl text-slate-300 mb-2"></i>
+                        <p class="text-sm font-semibold text-slate-700">Belum Ada Lamaran Terkirim</p>
+                        <p class="text-xs text-slate-500 mt-1">Jelajahi lowongan magang dan kirim berkas pendaftaran pertamamu.</p>
+                        <button onclick="switchTab('explore')" class="mt-3 px-4 py-2 bg-brand-600 text-white rounded-lg text-xs font-semibold">Cari Lowongan</button>
+                    </div>
+                `;
+            } else {
+                appsContainer.innerHTML = applications.map(app => {
+                    const statusColors = {
+                        TERKIRIM: "bg-blue-100 text-blue-800 border-blue-200",
+                        SELEKSI_BERKAS: "bg-amber-100 text-amber-800 border-amber-200",
+                        INTERVIEW: "bg-indigo-100 text-indigo-800 border-indigo-200",
+                        DITERIMA: "bg-emerald-100 text-emerald-800 border-emerald-200"
+                    };
+
+                    return `
+                    <div class="bg-white p-4 rounded-xl border border-slate-200/90 shadow-sm space-y-3">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-sm">${app.jobTitle}</h3>
+                                <p class="text-xs text-slate-600 font-medium">${app.company}</p>
+                            </div>
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold border ${statusColors[app.status] || 'bg-slate-100'} w-max">
+                                <i class="fa-solid fa-circle text-[8px] me-1.5"></i> ${app.statusLabel}
+                            </span>
+                        </div>
+
+                        <!-- Progress Visual Timeline Status -->
+                        <div class="py-2">
+                            <p class="text-[11px] font-semibold text-slate-500 mb-2">Progress Seleksi Magang:</p>
+                            <div class="grid grid-cols-4 text-center text-[10px] font-semibold text-slate-500 gap-1">
+                                <div class="space-y-1">
+                                    <div class="h-1.5 w-full bg-brand-600 rounded-full"></div>
+                                    <span class="text-brand-600">Berkas Terkirim</span>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="h-1.5 w-full ${['SELEKSI_BERKAS', 'INTERVIEW', 'DITERIMA'].includes(app.status) ? 'bg-brand-600' : 'bg-slate-200'} rounded-full"></div>
+                                    <span class="${['SELEKSI_BERKAS', 'INTERVIEW', 'DITERIMA'].includes(app.status) ? 'text-brand-600' : ''}">Seleksi HR</span>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="h-1.5 w-full ${['INTERVIEW', 'DITERIMA'].includes(app.status) ? 'bg-brand-600' : 'bg-slate-200'} rounded-full"></div>
+                                    <span class="${['INTERVIEW', 'DITERIMA'].includes(app.status) ? 'text-brand-600' : ''}">Wawancara</span>
+                                </div>
+                                <div class="space-y-1">
+                                    <div class="h-1.5 w-full ${app.status === 'DITERIMA' ? 'bg-emerald-500' : 'bg-slate-200'} rounded-full"></div>
+                                    <span class="${app.status === 'DITERIMA' ? 'text-emerald-600 font-bold' : ''}">Penawaran</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between text-[11px] text-slate-400 pt-2 border-t border-slate-100">
+                            <span>Dikirim pada: <strong class="text-slate-600">${app.appliedDate}</strong></span>
+                            <button onclick="cancelApplication('${app.id}')" class="text-rose-500 hover:text-rose-700 font-medium">
+                                Batalkan Lamaran
+                            </button>
+                        </div>
+                    </div>
+                    `;
+                }).join('');
+            }
+
+            // Render Bookmarks View
+            const bookmarksContainer = document.getElementById('dash-bookmarks-view');
+            const savedJobs = INITIAL_JOBS.filter(j => savedJobIds.includes(j.id));
+            
+            if (savedJobs.length === 0) {
+                bookmarksContainer.innerHTML = `
+                    <div class="col-span-full text-center py-10 bg-slate-50 rounded-xl border border-dashed border-slate-300">
+                        <i class="fa-regular fa-bookmark text-3xl text-slate-300 mb-2"></i>
+                        <p class="text-sm font-semibold text-slate-700">Belum Ada Lowongan Tersimpan</p>
+                        <p class="text-xs text-slate-500 mt-1">Klik ikon bookmark pada lowongan yang ingin Anda pantau nanti.</p>
+                    </div>
+                `;
+            } else {
+                bookmarksContainer.innerHTML = savedJobs.map(job => `
+                    <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-start justify-between">
+                                <h4 class="font-bold text-slate-900 text-xs">${job.title}</h4>
+                                <button onclick="toggleSaveJob('${job.id}')" class="text-amber-500 text-xs">
+                                    <i class="fa-solid fa-bookmark"></i>
+                                </button>
+                            </div>
+                            <p class="text-xs text-slate-600 font-semibold">${job.company}</p>
+                            <p class="text-[11px] text-slate-500 mt-2">${job.location} • ${job.type}</p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-100 flex justify-end gap-2 text-xs">
+                            <button onclick="openJobDetail('${job.id}')" class="px-3 py-1 bg-slate-100 text-slate-700 rounded-md font-semibold">Detail</button>
+                            <button onclick="openApplyForm('${job.id}')" class="px-3 py-1 bg-brand-600 text-white rounded-md font-bold">Lamar</button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        }
+
+        function filterDashboardTab(viewName) {
+            const appsView = document.getElementById('dash-applications-view');
+            const savedView = document.getElementById('dash-bookmarks-view');
+            const tabAppsBtn = document.getElementById('dash-tab-apps');
+            const tabSavedBtn = document.getElementById('dash-tab-bookmarks');
+
+            if (viewName === 'applications') {
+                appsView.classList.remove('hidden');
+                savedView.classList.add('hidden');
+                tabAppsBtn.className = "py-3 px-4 text-sm font-semibold text-brand-600 border-b-2 border-brand-600 flex items-center gap-2";
+                tabSavedBtn.className = "py-3 px-4 text-sm font-medium text-slate-500 hover:text-slate-700 border-b-2 border-transparent flex items-center gap-2";
+            } else {
+                appsView.classList.add('hidden');
+                savedView.classList.remove('hidden');
+                tabSavedBtn.className = "py-3 px-4 text-sm font-semibold text-brand-600 border-b-2 border-brand-600 flex items-center gap-2";
+                tabAppsBtn.className = "py-3 px-4 text-sm font-medium text-slate-500 hover:text-slate-700 border-b-2 border-transparent flex items-center gap-2";
+            }
+        }
+
+        function cancelApplication(appId) {
+            applications = applications.filter(a => a.id !== appId);
+            localStorage.setItem('internhub_apps', JSON.stringify(applications));
+            showToast("Lamaran telah dibatalkan.", "info");
+            renderDashboard();
+            applyFilters();
+        }
+
+        // ATS Simulator Calculation Engine
+        function calculateAtsScore() {
+            const cvText = document.getElementById('ats-cv-text').value.toLowerCase();
+            const role = document.getElementById('ats-target-role').value;
+
+            let score = 50; // base score
+
+            // Checkboxes evaluation
+            if (document.getElementById('ats-chk-contact').checked) score += 10;
+            if (document.getElementById('ats-chk-metrics').checked) score += 12;
+            if (document.getElementById('ats-chk-linkedin').checked) score += 8;
+            if (document.getElementById('ats-chk-gpa').checked) score += 10;
+
+            // Keywords analysis based on role
+            const roleKeywords = {
+                uiux: ['figma', 'prototype', 'wireframe', 'user research', 'usability', 'ui', 'ux', 'design system'],
+                swe: ['python', 'java', 'sql', 'git', 'api', 'backend', 'frontend', 'database', 'scrum'],
+                marketing: ['campaign', 'tiktok', 'instagram', 'content', 'seo', 'analytics', 'copywriting'],
+                data: ['sql', 'tableau', 'python', 'excel', 'data', 'visualization', 'dashboard', 'statistics'],
+                hr: ['recruitment', 'interview', 'engagement', 'training', 'communication', 'sumber daya manusia']
+            };
+
+            const keywords = roleKeywords[role] || [];
+            let matchedCount = 0;
+
+            keywords.forEach(kw => {
+                if (cvText.includes(kw)) matchedCount++;
+            });
+
+            if (keywords.length > 0) {
+                const kwScore = Math.round((matchedCount / keywords.length) * 20);
+                score += kwScore;
+            }
+
+            // Cap at 100
+            score = Math.min(100, Math.max(30, score));
+
+            // Update UI Score
+            document.getElementById('ats-score-num').innerText = score;
+            const badge = document.getElementById('ats-score-badge');
+            const recList = document.getElementById('ats-recommendations');
+
+            if (score >= 80) {
+                badge.className = "inline-block px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-bold rounded-full";
+                badge.innerText = "Sangat Layak (ATS Optimum)";
+                recList.innerHTML = `
+                    <li>Penggunaan kata kunci sudah sangat sesuai standar industri.</li>
+                    <li>Sertakan link portfolio proyek aktif yang dapat diakses publik.</li>
+                    <li>Pastikan nama file PDF konsisten: <em>CV_ATS_Nama_PerguruanTinggi.pdf</em>.</li>
+                `;
+            } else if (score >= 60) {
+                badge.className = "inline-block px-3 py-1 bg-amber-100 text-amber-800 text-xs font-bold rounded-full";
+                badge.innerText = "Cukup Layak (Butuh Optimalisasi)";
+                recList.innerHTML = `
+                    <li>Tambahkan lebih banyak istilah teknis (kata kunci) spesifik bidang magang.</li>
+                    <li>Perbanyak metrik hasil proyek (contoh: "meningkatkan engagement 25%").</li>
+                    <li>Pastikan mencantumkan IPK dan kontak email institusi kampus.</li>
+                `;
+            } else {
+                badge.className = "inline-block px-3 py-1 bg-rose-100 text-rose-800 text-xs font-bold rounded-full";
+                badge.innerText = "Perlu Perbaikan Berkas";
+                recList.innerHTML = `
+                    <li>Format ringkasan CV masih terlalu pendek atau belum terstruktur.</li>
+                    <li>Lengkapi elemen wajib: Kontak, LinkedIn, IPK, dan Metrik Proyek.</li>
+                    <li>Gunakan kata kerja aktif Bahasa Indonesia/Inggris (merancang, memimpin, built).</li>
+                `;
+            }
+        }
+
+        // Custom Toast Notification Function (No Alerts)
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const icons = {
+                success: '<i class="fa-solid fa-circle-check text-emerald-500 text-base"></i>',
+                info: '<i class="fa-solid fa-circle-info text-blue-500 text-base"></i>',
+                warning: '<i class="fa-solid fa-triangle-exclamation text-amber-500 text-base"></i>'
+            };
+
+            toast.className = `pointer-events-auto flex items-center gap-3 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl border border-slate-800 text-xs font-medium transform transition-all duration-300 opacity-0 translate-y-2`;
+            toast.innerHTML = `${icons[type] || icons.info} <span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>
